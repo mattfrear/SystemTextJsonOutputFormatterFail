@@ -11,34 +11,29 @@ using System.IO;
 
 namespace SystemTextJsonOutputFormatterFail
 {
-    static class Program
+    internal static class Program
     {
         private static readonly MediaTypeHeaderValue ApplicationXml = MediaTypeHeaderValue.Parse("application/xml; charset=utf-8");
         private static readonly MediaTypeHeaderValue ApplicationJson = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
 
-        static void Main()
+        private static void Main()
         {
             var person = new Person { Title = Title.Mr, FirstName = "Matt", Age = 99, Income = 1234 };
 
             // Format using XmlDataContractSerializerOutputFormatter - also works
             var xmlFormatter = new XmlDataContractSerializerOutputFormatter();
-            var xmlResult = Serialize(person, xmlFormatter, ApplicationXml);
-            Console.WriteLine("Xml: " + xmlResult);
+            var result = Serialize(person, xmlFormatter, ApplicationXml);
+            Console.WriteLine("Xml: " + result);
 
             // Format using NewtonsoftJsonOutputFormatter - also works
-            var newtonsoftFormatter = new NewtonsoftJsonOutputFormatter(
-                new Newtonsoft.Json.JsonSerializerSettings(),
-                ArrayPool<char>.Shared,
-                new MvcOptions());
-
-            var newtonSoftJsonResult = Serialize(person, newtonsoftFormatter, ApplicationJson);
-            Console.WriteLine("Newtonsoft Json: " + newtonSoftJsonResult);
+            var newtonsoftFormatter = new NewtonsoftJsonOutputFormatter(new Newtonsoft.Json.JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
+            result = Serialize(person, newtonsoftFormatter, ApplicationJson);
+            Console.WriteLine("Newtonsoft Json: " + result);
 
             // Format using SystemTextJsonOutputFormatter - returns empty string :-(
             var systemTextJsonFormatter = new SystemTextJsonOutputFormatter(new System.Text.Json.JsonSerializerOptions());
-            var systemTextJsonResult = Serialize(person, systemTextJsonFormatter, ApplicationJson);
-
-            Console.WriteLine("System.Text.Json: " + systemTextJsonResult);
+            result = Serialize(person, systemTextJsonFormatter, ApplicationJson);
+            Console.WriteLine("System.Text.Json: " + result);
 
             Console.ReadLine();
         }
