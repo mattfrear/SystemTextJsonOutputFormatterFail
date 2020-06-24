@@ -20,7 +20,7 @@ namespace SystemTextJsonOutputFormatterFail
         {
             var person = new Person { Title = Title.Mr, FirstName = "Matt", Age = 99, Income = 1234 };
 
-            // Format using XmlDataContractSerializerOutputFormatter - also works
+            // Format using XmlDataContractSerializerOutputFormatter - works
             var xmlFormatter = new XmlDataContractSerializerOutputFormatter();
             var result = Serialize(person, xmlFormatter, ApplicationXml);
             Console.WriteLine("Xml: " + result);
