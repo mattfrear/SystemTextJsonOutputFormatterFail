@@ -8,6 +8,7 @@ using Models;
 using System;
 using System.Buffers;
 using System.IO;
+using System.Text;
 
 namespace SystemTextJsonOutputFormatterFail
 {
@@ -20,17 +21,17 @@ namespace SystemTextJsonOutputFormatterFail
         {
             var person = new Person { Title = Title.Mr, FirstName = "Matt", Age = 99, Income = 1234 };
 
-            // Format using XmlDataContractSerializerOutputFormatter - works
+            // Serialize using XmlDataContractSerializerOutputFormatter - works
             var xmlFormatter = new XmlDataContractSerializerOutputFormatter();
             var result = Serialize(person, xmlFormatter, ApplicationXml);
             Console.WriteLine("Xml: " + result);
 
-            // Format using NewtonsoftJsonOutputFormatter - also works
+            // Serialize using NewtonsoftJsonOutputFormatter - also works
             var newtonsoftFormatter = new NewtonsoftJsonOutputFormatter(new Newtonsoft.Json.JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
             result = Serialize(person, newtonsoftFormatter, ApplicationJson);
             Console.WriteLine("Newtonsoft Json: " + result);
 
-            // Format using SystemTextJsonOutputFormatter - returns empty string :-(
+            // Serialize using SystemTextJsonOutputFormatter - returns empty string :-(
             var systemTextJsonFormatter = new SystemTextJsonOutputFormatter(new System.Text.Json.JsonSerializerOptions());
             result = Serialize(person, systemTextJsonFormatter, ApplicationJson);
             Console.WriteLine("System.Text.Json: " + result);
@@ -55,7 +56,15 @@ namespace SystemTextJsonOutputFormatterFail
 
                 formatter.WriteAsync(outputFormatterContext).GetAwaiter().GetResult();
                 stringWriter.FlushAsync().GetAwaiter().GetResult();
-                return stringWriter.ToString();
+                var response = stringWriter.ToString();
+                if (string.IsNullOrEmpty(response))
+                {
+                    // workaround for SystemTextJsonOutputFormatter
+                    var ms = (MemoryStream)outputFormatterContext.HttpContext.Response.Body;
+                    response = Encoding.ASCII.GetString(ms.ToArray());
+                }
+
+                return response;
             }
         }
 
